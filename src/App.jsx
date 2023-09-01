@@ -20,9 +20,7 @@ export default function App() {
        <SpecialOffers />
        <CustomerReviews />
        <Subscribe />
-       <Footer />
-       
-        
+       <Footer />  
     </main>
   )
 }
