@@ -1,78 +1,61 @@
-import express from 'express';
+#!/usr/bin/env node
 import 'dotenv/config';
 import axios from 'axios'; 
+import { Command } from 'commander';
 
-const app = express();
+const program = new Command()
+class WeatherSDK{  
+    private api_key:string
+    url:string
 
-interface Weather {
-    lat: number;
-    lon: number;
-    api_key: string;
-    city_name?:string;
-    country_code?:string;
-    state_code?:string;
-    zip_code?:string;
-}
+    constructor(api_key:string){
+        this.api_key = api_key;
+        this.url = 'https://api.openweathermap.org/data/2.5/weather'
+    }
 
-async function getCurrentWeatherByLocation(data: Weather) {
-    try {
-        const { lat, lon, api_key } = data;
-        const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${api_key}`;
-        const fetchedData = await axios.get(url);
-        return fetchedData.data;
-    } catch (error) {
-        return 'There was an error!';
+
+    async getCurrentWeatherByLocation(lat:number, lon:number) {
+        try
+        {
+            const data = await axios.get(this.url, {
+                params:{
+                    lat:lat,
+                    lon:lon,
+                    appid:this.api_key
+                }
+            })
+            
+            return data.data
+        } catch (error) {
+            return 'There was an error!';
+        }
+    }
+
+    async getCurrentWeatherByCity(city:string){
+        try{
+            const data = await axios.get(this.url, {
+                params:{
+                   q:city,
+                   appid:this.api_key 
+                }
+            })
+            
+            return data.data
+        } catch (error) {
+            return 'There was an error!';
+        }
     }
 }
 
-async function getCurrentWeatherByCityName(data:Weather){
-    try {
-        const {lat, lon, city_name, api_key} = data
-        const url = `https://api.openweathermap.org/data/2.5/weather?q=${city_name}&appid=${api_key}`;
-        const fetchedData = await axios.get(url);
-        return fetchedData.data;
-    }
-    catch(error){
-        return "There was an error!"
-    }
-    
-}
 
+console.log(process.argv)
+program 
+    .command('weather')
+    .argument('<city>', 'City name')
+    .action(async (city:string) =>{
+        const SDK = new WeatherSDK(process.env.API_KEY as string)
+        const data  = await SDK.getCurrentWeatherByCity(city)
+        console.log(data)
+    })
 
-async function getCurrentWeatherByZipCode(data:Weather){
-    try {
-        const {lat, lon, city_name, country_code,zip_code,api_key} = data
-        const url = `https://api.openweathermap.org/data/2.5/weather?zip=${zip_code},${country_code}&appid=${api_key}`;
-        const fetchedData = await axios.get(url);
-        return fetchedData.data;
-    }
-    catch(error){
-        return "There was an error!"
-    }
-    
-}
-
-app.get('/', async (req, res) => {
-    const weatherData = await getCurrentWeatherByLocation({
-        lat: 35,
-        lon: 139,
-        api_key: process.env.API_KEY || ''
-    });
-    res.json(weatherData);
-});
-
-
-app.get('/:zip',async (req,res)=>{
-    const city_name = req.params.zip;
-    const weatherData = await getCurrentWeatherByCityName({
-        lat: 35,
-        lon: 139,
-        city_name: city_name,
-        api_key: process.env.API_KEY || ''
-    });
-    res.json(weatherData);
-})
-
-app.listen(3000, () => {
-    console.log('Server is running on port 3000');
-});
+program.parse(process.argv);
