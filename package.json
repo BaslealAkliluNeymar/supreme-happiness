@@ -2,7 +2,7 @@
   "name": "weather",
   "version": "1.0.0",
   "main": "index.js",
-  "bin":{
+  "bin": {
     "weather": "./dist/index.js"
   },
   "scripts": {
@@ -22,7 +22,10 @@
     "commander": "^13.1.0",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "nodemon": "^3.1.9"
+    "nodemon": "^3.1.9",
+    "pg": "^8.13.1",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.37.5"
   },
   "type": "module"
 }
