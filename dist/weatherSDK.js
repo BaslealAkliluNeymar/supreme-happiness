@@ -18,9 +18,10 @@ export class WeatherSDK {
     getCurrentWeatherByLocation(city) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const cacheKey = `weather_${city.replace(' ', "_").toLowerCase()}`;
+                const cacheKey = `weather_${city.trim().replace(/ /g, '_').toLowerCase()}`;
                 console.log(cacheKey);
                 const cachedData = this.WeatherCache.get(cacheKey);
+                console.log(`Cached Data: ${cachedData}`);
                 if (!cachedData) {
                     const findCountryCoordinates = yield axios.get('http://api.openweathermap.org/geo/1.0/direct', { params: {
                             q: city,
@@ -39,6 +40,7 @@ export class WeatherSDK {
                     });
                     this.WeatherCache.set(cacheKey, data.data, 600);
                     console.log('Cached Data');
+                    console.log(this.WeatherCache.keys()[0]);
                     return data.data;
                 }
                 else {
