@@ -21,7 +21,6 @@ export class WeatherSDK {
                         limit: 1,
                         appid: this.api_key
                     } });
-                console.log(findCountryCoordinates);
                 const data = yield axios.get(WeatherSDK.URL, {
                     params: {
                         lat: findCountryCoordinates.data[0].lat,
@@ -37,5 +36,34 @@ export class WeatherSDK {
             }
         });
     }
+    getWeatherForecast(city) {
+        try {
+            return axios.get('http://api.openweathermap.org/geo/1.0/direct', { params: {
+                    q: city,
+                    limit: 1,
+                    appid: this.api_key
+                } })
+                .then((response) => {
+                console.log(response.data);
+                const { lat, lon } = response.data[0];
+                return axios.get(WeatherSDK.HourlyURL, {
+                    params: {
+                        lat: lat,
+                        lon: lon,
+                        appid: this.api_key
+                    }
+                });
+            })
+                .then((weatherResponse) => {
+                console.log(weatherResponse.data);
+                return weatherResponse.data;
+            });
+        }
+        catch (error) {
+            return 'There was an error!';
+        }
+    }
 }
 WeatherSDK.URL = 'https://api.openweathermap.org/data/2.5/weather';
+WeatherSDK.HourlyURL = 'https://api.openweathermap.org/data/2.5/forecast';
+WeatherSDK.DailyURL = 'https://api.openweathermap.org/data/3.0/onecall/day_summary?';
