@@ -13,13 +13,12 @@ import NodeCache from 'node-cache';
 export class WeatherSDK {
     constructor(api_key) {
         this.api_key = api_key;
-        this.WeatherCache = new NodeCache({ stdTTL: 600 });
+        this.WeatherCache = new NodeCache({ stdTTL: 6000 });
     }
     getCurrentWeatherByLocation(city) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const cacheKey = `weather_${city.trim().replace(/ /g, '_').toLowerCase()}`;
-                console.log(cacheKey);
+                const cacheKey = `weather_${city.trim().replace(' ', '_').toLowerCase()}`;
                 const cachedData = this.WeatherCache.get(cacheKey);
                 console.log(`Cached Data: ${cachedData}`);
                 if (!cachedData) {
@@ -39,8 +38,8 @@ export class WeatherSDK {
                         }
                     });
                     this.WeatherCache.set(cacheKey, data.data, 600);
-                    console.log('Cached Data');
-                    console.log(this.WeatherCache.keys()[0]);
+                    console.log(`From CacheKey :${this.WeatherCache.get(cacheKey)}`);
+                    console.log(this.WeatherCache.get(cacheKey));
                     return data.data;
                 }
                 else {

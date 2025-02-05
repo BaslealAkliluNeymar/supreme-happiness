@@ -1,22 +1,20 @@
 import axios, { AxiosResponse } from 'axios';
 import 'dotenv/config';
 import NodeCache from 'node-cache';
-import { WeatherResponse } from './types.js';
+import { WeatherResponse,cacheData } from './types.js';
 export class WeatherSDK {
     private static URL:string = 'https://api.openweathermap.org/data/2.5/weather'
     private static HourlyURL:string = 'https://api.openweathermap.org/data/2.5/forecast'
     private WeatherCache:NodeCache;
     constructor(private api_key:string){
-        this.WeatherCache = new NodeCache({stdTTL:600})
+        this.WeatherCache = new NodeCache({stdTTL:6000})
     }
     
     async getCurrentWeatherByLocation(city:string) : Promise<WeatherResponse | string> {
         try
             {  
-                const cacheKey = `weather_${city.trim().replace(/ /g, '_').toLowerCase()}`;
-
-                console.log(cacheKey)
-                const cachedData = this.WeatherCache.get(cacheKey)
+                const cacheKey:string = `weather_${city.trim().replace(' ','_').toLowerCase()}`;
+                const cachedData:WeatherResponse | undefined = this.WeatherCache.get(cacheKey)
                 console.log(`Cached Data: ${cachedData}`)
                 if(!cachedData){
                     const findCountryCoordinates  = await axios.get(
@@ -44,9 +42,8 @@ export class WeatherSDK {
 
 
                     this.WeatherCache.set(cacheKey, data.data,600)
-                    console.log('Cached Data')
-                    console.log(this.WeatherCache.keys()[0]);
-
+                    console.log(`From CacheKey :${this.WeatherCache.get(cacheKey)}`)
+                    console.log(this.WeatherCache.get(cacheKey))
                     return data.data
                 }
                 else{

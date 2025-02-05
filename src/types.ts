@@ -45,4 +45,6 @@ export interface WeatherResponse {
     cod:number;
 }
 
+export type cacheData = object | undefined
+
 
