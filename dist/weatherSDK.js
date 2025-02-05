@@ -19,33 +19,35 @@ export class WeatherSDK {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const cacheKey = `weather_${city.replace(' ', "_").toLowerCase()}`;
-                console.log(`Cache Key: ${cacheKey}`);
-                // Check cache
+                console.log(cacheKey);
                 const cachedData = this.WeatherCache.get(cacheKey);
-                if (cachedData) {
+                if (!cachedData) {
+                    const findCountryCoordinates = yield axios.get('http://api.openweathermap.org/geo/1.0/direct', { params: {
+                            q: city,
+                            limit: 1,
+                            appid: this.api_key
+                        } });
+                    if (!findCountryCoordinates.data.length) {
+                        throw new Error('Please Enter a Correct Country Name!');
+                    }
+                    const data = yield axios.get(WeatherSDK.URL, {
+                        params: {
+                            lat: findCountryCoordinates.data[0].lat,
+                            lon: findCountryCoordinates.data[0].lon,
+                            appid: this.api_key
+                        }
+                    });
+                    this.WeatherCache.set(cacheKey, data.data, 600);
+                    console.log('Cached Data');
+                    return data.data;
+                }
+                else {
                     console.log('Data from Cache');
                     console.log(cachedData);
                     return cachedData;
                 }
-                // Fetch coordinates
-                const findCountryCoordinates = yield axios.get('http://api.openweathermap.org/geo/1.0/direct', {
-                    params: { q: city, limit: 1, appid: this.api_key }
-                });
-                if (!findCountryCoordinates.data.length) {
-                    throw new Error('Please Enter a Correct City Name!');
-                }
-                // Fetch weather data
-                const { lat, lon } = findCountryCoordinates.data[0];
-                const data = yield axios.get(WeatherSDK.URL, {
-                    params: { lat, lon, appid: this.api_key }
-                });
-                // Cache data for 10 minutes
-                this.WeatherCache.set(cacheKey, data.data, 600);
-                console.log(`Cached weather data for ${city}`);
-                return data.data;
             }
             catch (error) {
-                console.error('Error:', error);
                 return 'Failed to Fetch Weather Data, Please Try Again Later!';
             }
         });
